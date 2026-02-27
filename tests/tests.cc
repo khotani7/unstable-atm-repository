@@ -73,4 +73,45 @@ TEST_CASE("Example: Print Prompt Ledger", "[ex-3]") {
       "Deposit - Amount: $32000.00, Updated Balance: $72099.900");
   atm.PrintLedger("./prompt.txt", 12345678, 1234);
   REQUIRE(CompareFiles("./ex-1.txt", "./prompt.txt"));
+} 
+
+TEST_CASE("RegisterAccount: Check for duplicate account handling", "[adversarial]") {
+  Atm atm;
+  atm.RegisterAccount(1111, 1234, "User A", 100.0);
+  CHECK_THROWS_AS(atm.RegisterAccount(1111, 1234, "User B", 200.0), std::invalid_argument);
+}
+
+TEST_CASE("WithdrawCash: Negative amounts and overdrafts", "[adversarial]") {
+  Atm atm;
+  atm.RegisterAccount(2222, 1234, "User B", 100.0);
+  
+  SECTION("Negative withdrawal should throw invalid_argument") {
+    CHECK_THROWS_AS(atm.WithdrawCash(2222, 1234, -50.0), std::invalid_argument);
+  }
+  
+  SECTION("Overdraft should throw runtime_error") {
+    CHECK_THROWS_AS(atm.WithdrawCash(2222, 1234, 150.0), std::runtime_error);
+  }
+}
+
+TEST_CASE("DepositCash: Negative amounts", "[adversarial]") {
+  Atm atm;
+  atm.RegisterAccount(3333, 1234, "User C", 100.0);
+  
+  CHECK_THROWS_AS(atm.DepositCash(3333, 1234, -50.0), std::invalid_argument);
+}
+
+TEST_CASE("Transaction History: Ensure Withdraw/Deposit record transactions", "[adversarial]") {
+  Atm atm;
+  atm.RegisterAccount(4444, 1234, "User D", 100.0);
+  atm.DepositCash(4444, 1234, 50.0);
+  atm.WithdrawCash(4444, 1234, 20.0);
+  
+  auto& transactions = atm.GetTransactions();
+  REQUIRE(transactions[{4444, 1234}].size() == 2);
+}
+
+TEST_CASE("PrintLedger: Verify non-existent account", "[adversarial]") {
+  Atm atm;
+  CHECK_THROWS_AS(atm.PrintLedger("test.txt", 9999, 9999), std::invalid_argument);
 }
