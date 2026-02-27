@@ -70,7 +70,7 @@ TEST_CASE("Example: Print Prompt Ledger", "[ex-3]") {
   transactions[{12345678, 1234}].push_back(
       "Deposit - Amount: $40000.00, Updated Balance: $40099.90");
   transactions[{12345678, 1234}].push_back(
-      "Deposit - Amount: $32000.00, Updated Balance: $72099.90");
+      "Deposit - Amount: $32000.00, Updated Balance: $72099.900");
   atm.PrintLedger("./prompt.txt", 12345678, 1234);
   REQUIRE(CompareFiles("./ex-1.txt", "./prompt.txt"));
 }
